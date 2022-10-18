@@ -15,28 +15,20 @@ const handler = async (req, res) => {
     const first_name = req.data.payload.name;
     delete req.data.payload.last_name;
     delete req.data.payload.name;
-    console.log("payload=", req.data.payload);
-    var sql = "SELECT id from `astronaut`.Astronaut where last_name = ? and name = ?";
-    connection.query({ sql: sql, values: [last_name, first_name] }, function (err, result) {
-        if (err) throw err;
+    let sql = "SELECT id from `astronaut`.Astronaut where last_name = ? and name = ?";
+    let result = await connection.query({ sql: sql, values: [last_name, first_name] });
+    if (result.length === 0) {
+        res.end(JSON.stringify({ error: "record not found" }));
+        return;
+    }
+    console.log("record found = ", result);
+    sql = "UPDATE `astronaut`.Astronaut SET ";
+    for (const [key, value] of Object.entries(req.data.payload)) {
+        sql += `${key} = ${value}`;
+    }
 
-        if (result.length === 0) {
-            console.log(result);
-            res.end(JSON.stringify({ error: "record not found" }));
-            return;
-        }
-
-        console.log("record found = ", result);
-        let sql = "UPDATE `astronaut`.Astronaut SET ";
-        for (const [key, value] of Object.entries(req.data.payload)) {
-            sql += `${key} = ${value}`;
-        }
-
-        connection.query({ sql: sql }, function (err, result) {
-            if (err) throw err;
-            res.end(JSON.stringify(result));
-        });
-    });
+    result = await connection.query({ sql: sql });
+    res.end(JSON.stringify(result));
 };
 
 module.exports = handler;

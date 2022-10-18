@@ -10,10 +10,7 @@ const handler = async (req, res) => {
         return;
     }
     var sql = "INSERT INTO `astronaut`.Astronaut (name, last_name, age) VALUES (?, ?, ?)";
-    connection.query({ sql: sql, values: [req.data.payload.name, req.data.payload.last_name, req.data.payload.age] }, function (err, result) {
-        if (err) throw err;
-        console.log("1 record inserted");
-    });
+    await connection.query({ sql: sql, values: [req.data.payload.name, req.data.payload.last_name, req.data.payload.age] });
     res.end(JSON.stringify(req.data.payload));
 };
 
